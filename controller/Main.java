@@ -1,22 +1,26 @@
 package controller;
 
-import model.*;
-import view.*;
+import model.Source;
+import view.PainelCentral;
+import view.Quiosque;
 
 public class Main {
 
     public static void main(String[] args) {
-        Onibus onibus = new Onibus(3);
+        Source onibus = new Source(3);
 
         PainelCentral painel = new PainelCentral();
         Quiosque q1 = new Quiosque("A");
-        Quiosque q2 = new Quiosque("B");
+        
+        onibus.addAssentoListener(painel);
+        onibus.addAssentoListener(q1);
 
-        onibus.adicionarObserver(painel);
-        onibus.adicionarObserver(q1);
-        onibus.adicionarObserver(q2);
+        RodoviariaController controller = new RodoviariaController(onibus);
 
-        onibus.reservarAssento(2);
-        onibus.indisponibilizarAssento(3);
+        System.out.println("\n--- Ação 1: Cliente solicita a reserva do assento 2 ---");
+        controller.solicitarReserva(2);
+        
+        System.out.println("\n--- Ação 2: Cliente solicita a compra do assento 3 ---");
+        controller.solicitarCompra(3);
     }
 }

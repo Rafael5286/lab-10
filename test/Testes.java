@@ -4,60 +4,63 @@ import model.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class Testes {
 
-    private Onibus onibus;
-    private List<List<Assento>> notificacoesRecebidas;
+    private Source onibus;
+    private List<AssentoEvent> notificacoesRecebidas;
 
     @BeforeEach
     void setUp() {
-        onibus = new Onibus(3);
+        onibus = new Source(3);
         notificacoesRecebidas = new ArrayList<>();
 
-        model.Observer observerDeTeste = assentos -> {
-            // Clonando a lista para não alterar
-            List<Assento> copia = new ArrayList<>();
-            for (Assento a : assentos) {
-                Assento clone = new Assento(a.getNumero());
-                clone.setStatus(a.getStatus());
-                copia.add(clone);
-            }
-            notificacoesRecebidas.add(copia);
-        };
-        onibus.adicionarObserver(observerDeTeste);
+        AssentoListener listenerDeTeste = evento -> notificacoesRecebidas.add(evento);
+        onibus.addAssentoListener(listenerDeTeste);
     }
 
     @Test
     void testReservaAssentoDisparaNotificacao() {
         onibus.reservarAssento(1);
 
-        assertEquals(1, notificacoesRecebidas.size());
-        Assento assento = notificacoesRecebidas.get(0).get(0);
-        assertEquals(AssentoStatus.RESERVADO, assento.getStatus());
+        assertEquals(1, notificacoesRecebidas.size(), "Deveria ter recebido uma notificação.");
     }
 
     @Test
-    void testIndisponibilizarAssentoAtualizaStatusCorretamente() {
+    void testIndisponibilizarAssentoDisparaEventoComDadosCorretos() {
         onibus.indisponibilizarAssento(2);
 
         assertEquals(1, notificacoesRecebidas.size());
-        Assento assento = notificacoesRecebidas.get(0).get(1);
-        assertEquals(AssentoStatus.INDISPONIVEL, assento.getStatus());
+        AssentoEvent evento = notificacoesRecebidas.get(0);
+
+        assertEquals(2, evento.getNumeroAssento(), "O número do assento no evento está incorreto.");
+        assertEquals(AssentoStatus.INDISPONIVEL, evento.getNovoStatus(), "O status no evento está incorreto.");
+        assertInstanceOf(Source.class, evento.getSource(), "A origem do evento deveria ser a classe Source.");
     }
 
     @Test
     void testNaoNotificaSeAssentoNaoExistir() {
-        onibus.reservarAssento(999);
-        assertEquals(0, notificacoesRecebidas.size());
+        onibus.reservarAssento(999); 
+        assertTrue(notificacoesRecebidas.isEmpty(), "Não deveria notificar se o assento não existe.");
     }
 
     @Test
-    void testGetAssentosRetornaListaImutavel() {
-        List<Assento> assentos = onibus.getAssentos();
-        assertThrows(UnsupportedOperationException.class, () -> assentos.add(new Assento(4)));
+    void testMultiplasNotificacoes() {
+        onibus.reservarAssento(1);
+        onibus.indisponibilizarAssento(3);
+
+        assertEquals(2, notificacoesRecebidas.size(), "Deveria ter recebido duas notificações.");
+
+        AssentoEvent primeiroEvento = notificacoesRecebidas.get(0);
+        assertEquals(1, primeiroEvento.getNumeroAssento());
+        assertEquals(AssentoStatus.RESERVADO, primeiroEvento.getNovoStatus());
+
+        AssentoEvent segundoEvento = notificacoesRecebidas.get(1);
+        assertEquals(3, segundoEvento.getNumeroAssento());
+        assertEquals(AssentoStatus.INDISPONIVEL, segundoEvento.getNovoStatus());
     }
 }

@@ -2,9 +2,7 @@ package view;
 
 import model.*;
 
-import java.util.List;
-
-public class Quiosque implements Observer {
+public class Quiosque implements AssentoListener {
 
     private final String id;
 
@@ -13,11 +11,11 @@ public class Quiosque implements Observer {
     }
 
     @Override
-    public void atualizar(List<Assento> assentos) {
-        System.out.println("Quiosque " + id + ":");
-        for (Assento a : assentos) {
-            System.out.printf("Assento %02d - %s%n", a.getNumero(), a.getStatus());
-        }
+    public void statusAssentoAlterado(AssentoEvent event) {
+        System.out.println("Quiosque " + id + " (Notificação Recebida):");
+        System.out.printf("Listagem atualizada -> Assento %02d - %s%n",
+                event.getNumeroAssento(),
+                event.getNovoStatus());
         System.out.println("----------");
     }
 }
