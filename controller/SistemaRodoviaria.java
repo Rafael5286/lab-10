@@ -6,7 +6,7 @@ import view.*;
 public class SistemaRodoviaria {
 
     public static void main(String[] args) {
-        Onibus onibus = new Onibus(3); // Exemplo com 5 assentos
+        Onibus onibus = new Onibus(3); 
 
         PainelCentral painel = new PainelCentral();
         Quiosque q1 = new Quiosque("A");
